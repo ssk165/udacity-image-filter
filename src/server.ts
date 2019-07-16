@@ -7,7 +7,7 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   // Init the Express application
   const app = express();
 
-  let file: string[] = [];
+
   // Set the network port
   const port = process.env.PORT || 8082;
 
@@ -15,17 +15,26 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   app.use(bodyParser.json());
 
 
+  let fileData: string[] = [];
 
   app.get("/", async (req, res) => {
-    res.send("Please try /filteredimage?image_url={{URL}}");
+    res.send("Please try GET /filteredimage?image_url={{URL}}");
   });
 
 
+  app.get("/filteredimage", async (req, res) => {
 
+    let { image_url } = req.query;
 
-  // Displays a simple message to the user
-  app.get("/", async (req, res) => {
-    res.send("try GET /filteredimage?image_url={{}}")
+    deleteLocalFiles(fileData);
+    let finalImage = await filterImageFromURL(image_url);
+
+    if (!finalImage)
+      return res.status(422).send({ message: 'Ohoo! Something went wrong' });
+
+    fileData.push(finalImage);
+
+    res.status(200).sendFile(finalImage);
   });
 
 
